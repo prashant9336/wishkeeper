@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta property="og:title" content="✨ The Wish Keeper">
+<meta property="og:description" content="Your stars. Your wish. Your moment.">
+<title>✨ The Wish Keeper</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Lato:wght@300;400&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--gold:#f0c060;--deep:#060010;--border:rgba(240,192,96,.2);--tp:#f0e8ff;--tm:#a78bfa}
+html,body{min-height:100vh;background:var(--deep);font-family:'Lato',sans-serif;color:var(--tp);overflow-x:hidden}
+#sky{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 80px}
+.screen{width:100%;max-width:400px;display:none;flex-direction:column;align-items:center;gap:0;padding-top:44px}
+.screen.active{display:flex;animation:ri .7s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes ri{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.panel{width:100%;display:none;flex-direction:column;align-items:center;gap:16px;animation:ri .5s ease}
+.panel.open{display:flex}
+.moon{width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#fde68a,#f0c060 40%,#c2840a 80%,#7c4b00);box-shadow:0 0 30px rgba(240,192,96,.5);margin-bottom:14px;animation:mg 3s ease-in-out infinite alternate}
+@keyframes mg{from{box-shadow:0 0 25px rgba(240,192,96,.4)}to{box-shadow:0 0 50px rgba(240,192,96,.7),0 0 90px rgba(240,192,96,.18)}}
+h1{font-family:'Cinzel',serif;font-size:22px;font-weight:500;color:var(--gold);letter-spacing:3px;text-align:center;margin-bottom:4px;text-shadow:0 0 28px rgba(240,192,96,.4)}
+.sub{font-family:'EB Garamond',serif;font-size:16px;color:var(--tm);text-align:center;letter-spacing:.5px;font-style:italic;margin-bottom:28px}
+.stepbar{display:flex;width:100%;margin-bottom:22px;position:relative}
+.stepbar::before{content:'';position:absolute;top:12px;left:13%;right:13%;height:1px;background:linear-gradient(to right,transparent,var(--border),transparent)}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;z-index:1}
+.sdot{width:25px;height:25px;border-radius:50%;border:1px solid var(--border);background:var(--deep);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--tm);transition:all .4s;font-family:'Cinzel',serif}
+.step.active .sdot{background:rgba(240,192,96,.1);border-color:var(--gold);color:var(--gold);box-shadow:0 0 10px rgba(240,192,96,.25)}
+.step.done .sdot{background:rgba(240,192,96,.12);border-color:rgba(240,192,96,.5);color:var(--gold)}
+.slbl{font-size:10px;color:rgba(167,139,250,.45);letter-spacing:1px;text-transform:uppercase;transition:color .4s}
+.step.active .slbl,.step.done .slbl{color:rgba(240,192,96,.6)}
+.card{width:100%;background:rgba(76,29,149,.1);border:1px solid var(--border);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.fl{font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;opacity:.65;margin-bottom:5px;display:block}
+.fr{display:flex;gap:10px}
+input[type=date],input[type=text]{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:12px 14px;color:var(--tp);font-family:'Lato',sans-serif;font-size:15px;outline:none;-webkit-appearance:none;appearance:none;transition:border-color .2s;color-scheme:dark}
+input:focus{border-color:rgba(240,192,96,.4)}
+input::placeholder{color:rgba(167,139,250,.3)}
+.prof-card{width:100%;border-radius:18px;overflow:hidden;border:1px solid rgba(240,192,96,.2);background:linear-gradient(145deg,rgba(76,29,149,.18),rgba(15,0,35,.85))}
+.prof-top{padding:18px 18px 14px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(240,192,96,.07)}
+.sorb{width:58px;height:58px;border-radius:50%;border:1px solid rgba(240,192,96,.28);background:rgba(240,192,96,.05);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.sg{font-size:22px;line-height:1}
+.sn{font-family:'Cinzel',serif;font-size:8px;color:rgba(240,192,96,.55);letter-spacing:1.5px;margin-top:2px}
+.pname{font-family:'Cinzel',serif;font-size:17px;color:var(--gold)}
+.psigns{font-family:'EB Garamond',serif;font-size:13px;font-style:italic;color:var(--tm);margin-top:3px}
+.pbody{padding:0 18px 18px;display:flex;flex-direction:column;gap:11px}
+.traits{display:flex;gap:6px;flex-wrap:wrap}
+.trait{font-size:11px;color:rgba(167,139,250,.8);background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.18);border-radius:20px;padding:3px 11px}
+.ct-box{background:rgba(240,192,96,.04);border:1px solid rgba(240,192,96,.12);border-radius:11px;padding:13px}
+.ctl{font-size:10px;color:rgba(240,192,96,.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px}
+.ctt{font-family:'EB Garamond',serif;font-size:14px;line-height:1.7;color:#ddd6fe;font-style:italic}
+.mpr{display:flex;align-items:center;gap:10px}
+.mpi{font-size:19px}
+.mpn{font-family:'Cinzel',serif;font-size:12px;color:var(--gold);letter-spacing:.5px}
+.mph{font-size:11px;color:rgba(167,139,250,.42);font-family:'EB Garamond',serif;font-style:italic}
+.brings{position:relative;width:148px;height:148px;display:flex;align-items:center;justify-content:center}
+.bring{position:absolute;border-radius:50%;border:1px solid rgba(124,58,237,.22);animation:br 4s ease-in-out infinite}
+.bring:nth-child(1){width:148px;height:148px}
+.bring:nth-child(2){width:108px;height:108px;animation-delay:.5s;opacity:.55}
+.bring:nth-child(3){width:70px;height:70px;background:radial-gradient(circle at 35% 35%,#a78bfa,#6d28d9);box-shadow:0 0 26px rgba(124,58,237,.6);animation:bc 4s ease-in-out infinite;cursor:pointer}
+@keyframes br{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+@keyframes bc{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.bcnt{font-family:'Cinzel',serif;font-size:26px;color:var(--gold);min-height:42px;text-align:center;text-shadow:0 0 16px rgba(240,192,96,.35)}
+.wfield{width:100%;background:rgba(76,29,149,.1);border:1px solid var(--border);border-radius:18px;padding:20px;transition:border-color .3s,box-shadow .3s}
+.wfield:focus-within{border-color:rgba(240,192,96,.38);box-shadow:0 0 22px rgba(240,192,96,.06)}
+.wlbl{font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;opacity:.65;margin-bottom:11px;display:block}
+textarea{width:100%;background:transparent;border:none;outline:none;color:var(--tp);font-family:'EB Garamond',serif;font-size:18px;line-height:1.8;resize:none;min-height:108px;caret-color:var(--gold)}
+textarea::placeholder{color:rgba(167,139,250,.32);font-style:italic}
+.crow{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(240,192,96,.1);padding-top:11px;margin-top:5px}
+.nin{flex:1;background:transparent;border:none;outline:none;color:var(--tp);font-family:'Lato',sans-serif;font-size:14px;caret-color:var(--gold);margin:0 8px}
+.nin::placeholder{color:rgba(167,139,250,.3);font-style:italic}
+.cct{font-size:11px;color:rgba(167,139,250,.32)}
+.btn-p{width:100%;padding:16px;border:none;cursor:pointer;background:linear-gradient(135deg,rgba(124,58,237,.9),rgba(76,29,149,.95));color:var(--gold);font-family:'Cinzel',serif;font-size:13px;font-weight:500;letter-spacing:3px;border-radius:14px;border:1px solid rgba(240,192,96,.2);box-shadow:0 0 26px rgba(124,58,237,.32);transition:all .3s}
+.btn-p:hover{box-shadow:0 0 40px rgba(240,192,96,.2),0 0 50px rgba(124,58,237,.38);transform:translateY(-1px)}
+.btn-p:active{transform:scale(.98)}
+.btn-p:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-g{background:transparent;border:1px solid rgba(167,139,250,.18);color:var(--tm);font-family:'Lato',sans-serif;font-size:13px;padding:11px 18px;border-radius:10px;cursor:pointer;transition:all .2s;width:100%}
+.btn-g:hover{border-color:rgba(240,192,96,.3);color:var(--gold)}
+.adot{font-size:11px;color:rgba(167,139,250,.18);text-align:center;margin-top:6px;cursor:pointer;letter-spacing:3px;user-select:none}
+.adot:hover{color:rgba(240,192,96,.3)}
+#loadSc{justify-content:center;min-height:80vh}
+.lorbs{position:relative;width:128px;height:128px}
+.lorb{position:absolute;border-radius:50%;animation:orb var(--t) linear infinite}
+.lorb:nth-child(1){width:128px;height:128px;border:1px solid rgba(240,192,96,.1);top:0;left:0;--t:8s}
+.lorb:nth-child(2){width:88px;height:88px;border:1px solid rgba(124,58,237,.22);top:20px;left:20px;animation-direction:reverse;--t:3s}
+.lorb:nth-child(3){width:48px;height:48px;background:radial-gradient(circle at 35% 35%,#c084fc,#6d28d9);top:40px;left:40px;box-shadow:0 0 26px rgba(192,132,252,.7);animation:po 2s ease-in-out infinite}
+@keyframes orb{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes po{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.ll{font-family:'EB Garamond',serif;font-size:15px;color:var(--tm);font-style:italic;opacity:0;animation:fl 3s ease forwards;text-align:center}
+.ll:nth-child(1){animation-delay:.3s}.ll:nth-child(2){animation-delay:1.3s}.ll:nth-child(3){animation-delay:2.3s}
+@keyframes fl{0%{opacity:0;transform:translateY(6px)}30%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:.55}}
+#respSc{gap:13px}
+.eyebrow{font-size:10px;color:rgba(240,192,96,.45);letter-spacing:3px;text-transform:uppercase;text-align:center;font-family:'Cinzel',serif}
+.rname{font-family:'Cinzel',serif;font-size:20px;color:var(--gold);text-align:center;text-shadow:0 0 18px rgba(240,192,96,.28)}
+.rsigns{font-family:'EB Garamond',serif;font-size:13px;font-style:italic;color:var(--tm);text-align:center;margin-top:2px}
+.div{width:100%;display:flex;align-items:center;gap:9px;margin:2px 0 16px}
+.dl{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--border))}
+.dl.r{background:linear-gradient(to left,transparent,var(--border))}
+.ds{font-size:11px;color:rgba(240,192,96,.35)}
+.ccrd{width:100%;background:linear-gradient(145deg,rgba(76,29,149,.16),rgba(240,192,96,.04));border:1px solid rgba(240,192,96,.22);border-radius:18px;padding:22px;position:relative}
+.ccrd::before{content:'✦';position:absolute;top:12px;right:15px;font-size:10px;color:rgba(240,192,96,.18)}
+.cclbl{font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;opacity:.55;margin-bottom:11px;font-family:'Cinzel',serif}
+.cctext{font-family:'EB Garamond',serif;font-size:17px;line-height:1.9;color:#ede9fe;white-space:pre-line}
+.ccseal{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:13px;border-top:1px solid rgba(240,192,96,.1)}
+.sl{flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(240,192,96,.16))}
+.sr{flex:1;height:1px;background:linear-gradient(to left,transparent,rgba(240,192,96,.16))}
+.st{font-size:10px;color:rgba(240,192,96,.38);letter-spacing:2px;font-family:'Cinzel',serif}
+.wnum{font-size:11px;color:rgba(167,139,250,.38);text-align:center;letter-spacing:1px}
+.tlbl{font-size:10px;color:rgba(167,139,250,.38);letter-spacing:2px;text-transform:uppercase;text-align:center}
+.tfree{width:100%;padding:13px 15px;background:rgba(167,139,250,.04);border:1px solid rgba(167,139,250,.11);border-radius:11px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tfl{display:flex;flex-direction:column;gap:2px}
+.tft{font-size:13px;color:var(--tm)}
+.tfd{font-size:11px;color:rgba(167,139,250,.42);font-family:'EB Garamond',serif;font-style:italic}
+.bwa{padding:10px 13px;background:rgba(37,211,102,.09);border:1px solid rgba(37,211,102,.25);color:#25d366;font-size:12px;border-radius:8px;cursor:pointer;white-space:nowrap;font-family:'Lato',sans-serif;transition:all .2s}
+.bwa:hover{background:rgba(37,211,102,.16)}
+.tprem{width:100%;padding:17px;background:linear-gradient(135deg,rgba(240,192,96,.07),rgba(124,58,237,.07));border:1px solid rgba(240,192,96,.25);border-radius:13px;position:relative;overflow:hidden}
+.tprem::before{content:'✦ POPULAR';position:absolute;top:0;right:0;background:rgba(240,192,96,.1);color:var(--gold);font-size:9px;letter-spacing:1.5px;padding:4px 10px;border-bottom-left-radius:8px;font-family:'Cinzel',serif}
+.tph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px}
+.tptitle{font-family:'Cinzel',serif;font-size:14px;color:var(--gold)}
+.tpp{font-family:'Cinzel',serif;font-size:17px;color:var(--gold);text-align:right}
+.tpp span{font-size:10px;color:rgba(240,192,96,.45);display:block}
+.perks{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+.perk{font-size:13px;color:var(--tm);display:flex;align-items:flex-start;gap:7px;font-family:'EB Garamond',serif;font-style:italic}
+.perk::before{content:'✦';color:rgba(240,192,96,.45);font-size:9px;margin-top:4px;flex-shrink:0}
+.bseal{width:100%;padding:13px;background:linear-gradient(135deg,#f0c060,#e8a83a);color:#1a0040;font-family:'Cinzel',serif;font-size:12px;font-weight:600;letter-spacing:2px;border:none;border-radius:10px;cursor:pointer;box-shadow:0 4px 16px rgba(240,192,96,.25);transition:all .2s}
+.bseal:hover{box-shadow:0 4px 26px rgba(240,192,96,.42);transform:translateY(-1px)}
+.brow{display:flex;gap:8px;width:100%}
+.bbot{flex:1;padding:11px;background:transparent;border:1px solid rgba(167,139,250,.16);color:var(--tm);font-family:'Lato',sans-serif;font-size:12px;border-radius:10px;cursor:pointer;transition:all .2s}
+.bbot:hover{border-color:rgba(240,192,96,.25);color:var(--gold)}
+#scrollSc{gap:13px}
+.swrap{width:100%;background:linear-gradient(160deg,#0d001f,#130028,#0d001f);border:1px solid rgba(240,192,96,.25);border-radius:18px;overflow:hidden}
+.sbar{width:100%;height:5px;background:linear-gradient(to right,#0d001f,rgba(240,192,96,.45),#f0c060,rgba(240,192,96,.45),#0d001f)}
+.sin{padding:24px 20px;position:relative}
+.sc{position:absolute;color:rgba(240,192,96,.28);font-size:10px}
+.sc.tl{top:11px;left:11px}.sc.tr{top:11px;right:11px}.sc.bl{bottom:11px;left:11px}.sc.br{bottom:11px;right:11px}
+.shdr{text-align:center;margin-bottom:16px}
+.sico{font-size:32px;display:block;margin-bottom:5px;filter:drop-shadow(0 0 8px rgba(240,192,96,.38))}
+.sew{font-family:'Cinzel',serif;font-size:10px;color:rgba(240,192,96,.5);letter-spacing:3px;margin-bottom:5px}
+.snm{font-family:'Cinzel',serif;font-size:18px;color:var(--gold);text-shadow:0 0 16px rgba(240,192,96,.28)}
+.ssigns{font-family:'EB Garamond',serif;font-size:12px;font-style:italic;color:var(--tm);margin-top:3px}
+.orn{display:flex;align-items:center;gap:8px;margin:11px 0}
+.ol{flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(240,192,96,.2))}
+.or{flex:1;height:1px;background:linear-gradient(to left,transparent,rgba(240,192,96,.2))}
+.os{font-size:10px;color:rgba(240,192,96,.38)}
+.wblk{background:rgba(255,255,255,.025);border:1px solid rgba(240,192,96,.1);border-radius:10px;padding:13px 15px;margin-bottom:13px;position:relative}
+.wblk::before{content:'"';position:absolute;top:-5px;left:11px;font-family:'EB Garamond',serif;font-size:26px;color:rgba(240,192,96,.2);line-height:1}
+.wblbl{font-size:10px;color:rgba(167,139,250,.42);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.wbtxt{font-family:'EB Garamond',serif;font-size:16px;line-height:1.7;color:#ede9fe;font-style:italic}
+.cblk{margin-bottom:14px}
+.cblbl{font-size:10px;color:rgba(240,192,96,.42);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:9px}
+.cbtxt{font-family:'EB Garamond',serif;font-size:15px;line-height:1.85;color:#ddd6fe;text-align:center;font-style:italic}
+.stamp{display:flex;flex-direction:column;align-items:center;gap:4px;margin:14px 0 3px}
+.sring{width:62px;height:62px;border-radius:50%;border:1px solid rgba(240,192,96,.28);background:rgba(240,192,96,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;animation:sh 3s ease-in-out infinite}
+@keyframes sh{0%,100%{opacity:.62}50%{opacity:1}}
+.ssym{font-size:18px;line-height:1}
+.sw2{font-family:'Cinzel',serif;font-size:8px;color:rgba(240,192,96,.5);letter-spacing:2px}
+.sdate{font-size:11px;color:rgba(167,139,250,.32);letter-spacing:.7px;font-family:sans-serif}
+.sid{font-size:10px;color:rgba(167,139,250,.22);font-family:'Courier New',monospace}
+.sacts{display:flex;gap:8px;width:100%}
+.sabt{flex:1;padding:12px 7px;border-radius:9px;border:none;cursor:pointer;font-family:'Cinzel',serif;font-size:10px;letter-spacing:1.5px;transition:all .2s;text-align:center}
+.sa1{background:linear-gradient(135deg,#f0c060,#d97706);color:#1a0040;font-weight:600;box-shadow:0 3px 11px rgba(240,192,96,.22)}
+.sa1:hover{box-shadow:0 3px 18px rgba(240,192,96,.38)}
+.sa2{background:rgba(37,211,102,.07);border:1px solid rgba(37,211,102,.2)!important;color:#25d366}
+.sa2:hover{background:rgba(37,211,102,.12)}
+.snote{font-size:10px;color:rgba(167,139,250,.25);text-align:center;font-family:sans-serif}
+#modal{position:fixed;inset:0;z-index:100;display:none;align-items:flex-end;justify-content:center;background:rgba(6,0,16,.74);backdrop-filter:blur(6px)}
+#modal.open{display:flex;animation:mf .3s ease}
+@keyframes mf{from{opacity:0}to{opacity:1}}
+.msheet{width:100%;max-width:420px;background:#0d001f;border-top:1px solid rgba(240,192,96,.16);border-radius:18px 18px 0 0;padding:22px 19px 34px;animation:mu .4s cubic-bezier(.16,1,.3,1)}
+@keyframes mu{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhnd{width:34px;height:3px;background:rgba(167,139,250,.2);border-radius:2px;margin:0 auto 15px}
+.mtitle{font-family:'Cinzel',serif;font-size:17px;color:var(--gold);text-align:center;margin-bottom:4px}
+.msub{font-family:'EB Garamond',serif;font-size:14px;font-style:italic;color:var(--tm);text-align:center;margin-bottom:18px;line-height:1.6}
+.mperks{display:flex;flex-direction:column;gap:9px;margin-bottom:18px}
+.mperk{display:flex;align-items:center;gap:11px;font-family:'EB Garamond',serif;font-size:14px;font-style:italic;color:var(--tp)}
+.mpi{width:30px;height:30px;border-radius:8px;background:rgba(240,192,96,.07);border:1px solid rgba(240,192,96,.15);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.bpay{width:100%;padding:15px;background:linear-gradient(135deg,#f0c060,#d97706);color:#1a0040;font-family:'Cinzel',serif;font-size:14px;font-weight:600;letter-spacing:2px;border:none;border-radius:12px;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 18px rgba(240,192,96,.3)}
+.bmc{width:100%;padding:11px;background:transparent;border:1px solid rgba(167,139,250,.14);color:var(--tm);font-family:'EB Garamond',serif;font-size:14px;font-style:italic;border-radius:10px;cursor:pointer}
+.pin-input{width:100%;text-align:center;font-size:24px;letter-spacing:12px;background:transparent;border:1px solid var(--border);border-radius:11px;padding:14px;color:var(--gold);font-family:'Cinzel',serif;outline:none}
+.ah{display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:14px;margin-top:5px}
+.ah h2{font-family:'Cinzel',serif;font-size:17px;color:var(--gold)}
+.abg{font-size:11px;color:var(--tm);background:rgba(124,58,237,.16);border:1px solid rgba(124,58,237,.22);padding:3px 9px;border-radius:18px}
+.wc{width:100%;background:rgba(76,29,149,.07);border:1px solid rgba(240,192,96,.09);border-radius:11px;padding:13px;margin-bottom:9px}
+.wcn{font-size:10px;color:var(--gold);opacity:.6;margin-bottom:4px;letter-spacing:1px}
+.wcs{font-family:'EB Garamond',serif;font-size:11px;font-style:italic;color:var(--tm);margin-bottom:5px}
+.wcw{font-family:'EB Garamond',serif;font-size:14px;color:var(--tp);line-height:1.6;margin-bottom:5px}
+.wcm{font-size:10px;color:rgba(167,139,250,.3)}
+.ec{text-align:center;font-family:'EB Garamond',serif;font-style:italic;color:rgba(167,139,250,.28);font-size:14px;padding:36px 0}
+.spark{position:fixed;pointer-events:none;z-index:200;animation:spk 1.8s ease forwards}
+@keyframes spk{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-88px) scale(.18) rotate(200deg)}}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div id="app">
+
+<div class="screen active" id="mainSc">
+  <div class="moon"></div>
+  <h1>THE WISH KEEPER</h1>
+  <p class="sub">Your stars. Your wish. Your moment.</p>
+  <div class="stepbar">
+    <div class="step active" id="s1"><div class="sdot">I</div><span class="slbl">Stars</span></div>
+    <div class="step" id="s2"><div class="sdot">II</div><span class="slbl">Breathe</span></div>
+    <div class="step" id="s3"><div class="sdot">III</div><span class="slbl">Wish</span></div>
+  </div>
+
+  <div class="panel open" id="p1">
+    <div class="card">
+      <div>
+        <span class="fl">🌙 Date of Birth</span>
+        <input type="date" id="dob" max="2010-01-01">
+      </div>
+      <div class="fr">
+        <div style="flex:1">
+          <span class="fl" style="font-size:9px">Birth City</span>
+          <input type="text" id="city" placeholder="e.g. Prayagraj" maxlength="28">
+        </div>
+        <div style="flex:1">
+          <span class="fl" style="font-size:9px">Your Name</span>
+          <input type="text" id="nm1" placeholder="e.g. Prashant" maxlength="28">
+        </div>
+      </div>
+    </div>
+    <button class="btn-p" onclick="reveal()">✦ &nbsp; READ MY STARS &nbsp; ✦</button>
+    <p class="adot" onclick="adminLogin()">· · ·</p>
+  </div>
+
+  <div class="panel" id="p1b">
+    <div class="prof-card">
+      <div class="prof-top">
+        <div class="sorb"><div class="sg" id="sg">♈</div><div class="sn" id="sn">ARIES</div></div>
+        <div><div class="pname" id="pn">Seeker</div><div class="psigns" id="ps">Sun in Aries · Moon in Scorpio</div></div>
+      </div>
+      <div class="pbody">
+        <div class="traits" id="tr"></div>
+        <div class="ct-box"><div class="ctl">✦ Cosmic Energy Today</div><div class="ctt" id="ct"></div></div>
+        <div class="mpr">
+          <div class="mpi" id="mpi">🌒</div>
+          <div><div class="mpn" id="mpn">Waxing Crescent</div><div class="mph" id="mph">a powerful time to plant intentions</div></div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-p" onclick="goBreathe()">✦ &nbsp; THE STARS ARE ALIGNED &nbsp; ✦</button>
+  </div>
+
+  <div class="panel" id="p2">
+    <p style="font-family:'EB Garamond',serif;font-size:16px;color:var(--tm);text-align:center;font-style:italic;line-height:1.7">Your cosmic window is open.<br>One breath before your wish.</p>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:18px">
+      <div class="brings">
+        <div class="bring"></div><div class="bring"></div>
+        <div class="bring" id="bc" onclick="doBreathe()"></div>
+      </div>
+      <div class="bcnt" id="bct">Touch the light</div>
+    </div>
+    <button class="btn-g" id="skp" onclick="goWish()" style="display:none">Skip → Write my wish</button>
+  </div>
+
+  <div class="panel" id="p3">
+    <div class="wfield">
+      <span class="wlbl">🌙 Your Wish</span>
+      <textarea id="wt" rows="5" maxlength="280" placeholder="Speak it as if it is already true. The stars are listening…"></textarea>
+      <div class="crow">
+        <span style="font-size:14px;color:rgba(167,139,250,.28)">☽</span>
+        <input class="nin" type="text" id="nm2" placeholder="Your name" maxlength="28">
+        <span class="cct"><span id="cl">280</span></span>
+      </div>
+    </div>
+    <button class="btn-p" id="rb" onclick="sendWish()">✦ &nbsp; RELEASE INTO THE UNIVERSE &nbsp; ✦</button>
+  </div>
+</div>
+
+<div class="screen" id="loadSc">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:26px">
+    <div class="lorbs"><div class="lorb"></div><div class="lorb"></div><div class="lorb"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:9px">
+      <div class="ll">The cosmos is reading your stars…</div>
+      <div class="ll">Your wish travels the void…</div>
+      <div class="ll">Something ancient stirs ✦</div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="respSc">
+  <div class="eyebrow">✦ &nbsp; Wish Received &nbsp; ✦</div>
+  <div class="rname" id="rn"></div>
+  <div class="rsigns" id="rsg"></div>
+  <div class="div"><div class="dl"></div><div class="ds">✦</div><div class="dl r"></div></div>
+  <div class="ccrd">
+    <div class="cclbl">✦ The Universe Speaks</div>
+    <div class="cctext" id="cr"></div>
+    <div class="ccseal"><div class="sl"></div><div class="st">SEALED</div><div class="sr"></div></div>
+  </div>
+  <div class="wnum" id="wn"></div>
+  <div class="tlbl">Your wish is alive — now what?</div>
+  <div class="tfree">
+    <div class="tfl"><div class="tft">📤 Share the portal</div><div class="tfd">Let someone you love make a wish</div></div>
+    <button class="bwa" onclick="doShare()">WhatsApp</button>
+  </div>
+  <div class="tprem">
+    <div class="tph">
+      <div><div class="tptitle">✦ Seal Your Wish</div><div style="font-size:11px;color:rgba(167,139,250,.42);margin-top:2px;font-family:'EB Garamond',serif;font-style:italic">cosmic scroll + astro card</div></div>
+      <div class="tpp">₹29<span>one time</span></div>
+    </div>
+    <div class="perks">
+      <div class="perk">Personalised scroll with your full astro profile woven in</div>
+      <div class="perk">200-word extended message from the universe</div>
+      <div class="perk">Shareable wish card for your WhatsApp status</div>
+    </div>
+    <button class="bseal" onclick="openModal()">✦ SEAL MY WISH — ₹29 ✦</button>
+  </div>
+  <div class="brow">
+    <button class="bbot" onclick="again()">🌙 New Wish</button>
+    <button class="bbot" onclick="window.open(C.su,'_blank')">☕ Support</button>
+  </div>
+</div>
+
+<div class="screen" id="scrollSc">
+  <div class="eyebrow" style="margin-bottom:3px">✦ &nbsp; Your Cosmic Scroll &nbsp; ✦</div>
+  <div class="swrap">
+    <div class="sbar"></div>
+    <div class="sin">
+      <div class="sc tl">✦</div><div class="sc tr">✦</div><div class="sc bl">✧</div><div class="sc br">✧</div>
+      <div class="shdr">
+        <span class="sico" id="sci">🌕</span>
+        <div class="sew">Cosmic Wish Scroll</div>
+        <div class="snm" id="snm"></div>
+        <div class="ssigns" id="ssig"></div>
+      </div>
+      <div class="orn"><div class="ol"></div><div class="os">✦</div><div class="os" style="font-size:8px;opacity:.32">✦</div><div class="os">✦</div><div class="or"></div></div>
+      <div class="wblk"><div class="wblbl">Your Wish</div><div class="wbtxt" id="sw"></div></div>
+      <div class="cblk"><div class="cblbl">✦ The Universe Speaks ✦</div><div class="cbtxt" id="scr"></div></div>
+      <div class="orn"><div class="ol"></div><div class="os" style="font-size:8px;opacity:.32">✦</div><div class="os">✦</div><div class="os" style="font-size:8px;opacity:.32">✦</div><div class="or"></div></div>
+      <div class="stamp">
+        <div class="sring"><div class="ssym">✦</div><div class="sw2">SEALED</div></div>
+        <div class="sdate" id="sdt"></div>
+        <div class="sid" id="sid"></div>
+      </div>
+    </div>
+    <div class="sbar"></div>
+  </div>
+  <div class="sacts">
+    <button class="sabt sa1" onclick="saveImg()">⬇ Save Image</button>
+    <button class="sabt sa2" onclick="shareScroll()">📤 WhatsApp Status</button>
+  </div>
+  <div class="snote">This scroll belongs only to you · forever</div>
+  <button class="btn-g" onclick="again()" style="margin-top:4px">🌙 Make Another Wish</button>
+</div>
+
+<div class="screen" id="adminLoginSc">
+  <div class="moon"></div>
+  <h1>KEEPER ACCESS</h1>
+  <p class="sub">Enter your secret</p>
+  <input class="pin-input" type="password" id="pi" maxlength="6" placeholder="· · · · · ·" oninput="chkPin(this.value)">
+  <button class="btn-g" onclick="show('mainSc')" style="margin-top:8px">← Back</button>
+</div>
+
+<div class="screen" id="adminSc">
+  <div class="ah"><h2>✦ All Wishes</h2><span class="abg" id="abg">0</span></div>
+  <div id="wlist" style="width:100%"></div>
+  <button class="btn-g" onclick="show('mainSc')">← Back</button>
+</div>
+
+</div>
+
+<div id="modal" onclick="closeModal(event)">
+  <div class="msheet">
+    <div class="mhnd"></div>
+    <div class="mtitle">✦ Seal Your Wish</div>
+    <div class="msub">Your wish + your stars, sealed together forever.</div>
+    <div class="mperks">
+      <div class="mperk"><div class="mpi">📜</div><div>Full cosmic scroll with your Sun & Moon reading woven in</div></div>
+      <div class="mperk"><div class="mpi">🌌</div><div>200-word extended message — the universe speaks at length</div></div>
+      <div class="mperk"><div class="mpi">🖼️</div><div>Shareable astrology wish card for WhatsApp status</div></div>
+      <div class="mperk"><div class="mpi">♾️</div><div>Sealed with your unique cosmic ID · yours forever</div></div>
+    </div>
+    <button class="bpay" onclick="pay()">✦ PAY ₹29 & SEAL ✦</button>
+    <button class="bmc" onclick="closeModal()">Maybe later</button>
+  </div>
+</div>
+
+<script>
+const C={pin:"2611",su:"https://buymeacoffee.com/prashant",pu:"https://rzp.io/l/wishkeeper",url:"https://wishkeeper.in",key:"wk_v3"};
+let W=JSON.parse(localStorage.getItem(C.key)||"[]");
+let G={name:"",sun:"",moon:"",glyph:"",phase:null,wish:"",resp:"",ext:""};
+
+(function(){
+  const cv=document.getElementById('sky'),ctx=cv.getContext('2d');
+  let w,h,stars=[],shots=[];
+  function rsz(){w=cv.width=innerWidth;h=cv.height=innerHeight;stars=[];for(let i=0;i<150;i++)stars.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.1+.2,o:Math.random()*.5+.1,sp:Math.random()*.012+.004,ph:Math.random()*Math.PI*2});}
+  rsz();addEventListener('resize',rsz);
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'#060010');g.addColorStop(1,'#0d001f');
+    ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+    const t=Date.now()*.001;
+    stars.forEach(s=>{const o=s.o*(.5+.5*Math.sin(t*s.sp*10+s.ph));ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${o})`;ctx.fill();});
+    if(Math.random()>.976)shots.push({x:Math.random()*w*.7,y:Math.random()*h*.35,vx:3.5+Math.random()*3,vy:1.2+Math.random()*2,l:1,t:[]});
+    shots=shots.filter(s=>{s.t.push({x:s.x,y:s.y});if(s.t.length>16)s.t.shift();s.x+=s.vx;s.y+=s.vy;s.l-=.022;if(s.l<=0)return false;s.t.forEach((p,i)=>{const a=(i/s.t.length)*s.l*.55;ctx.beginPath();ctx.arc(p.x,p.y,.7,0,Math.PI*2);ctx.fillStyle=`rgba(253,230,138,${a})`;ctx.fill();});return true;});
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');scrollTo({top:0,behavior:'smooth'});}
+function panel(id){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open'));document.getElementById(id).classList.add('open');}
+function step(n){[1,2,3].forEach(i=>{const e=document.getElementById('s'+i);e.classList.remove('active','done');if(i<n)e.classList.add('done');if(i===n)e.classList.add('active');});}
+
+const SIGNS=[
+  {n:"Aries",g:"♈",m1:3,d1:21,m2:4,d2:19,t:["bold","pioneer","fire energy"]},
+  {n:"Taurus",g:"♉",m1:4,d1:20,m2:5,d2:20,t:["grounded","patient","earth magic"]},
+  {n:"Gemini",g:"♊",m1:5,d1:21,m2:6,d2:20,t:["curious","adaptable","air sign"]},
+  {n:"Cancer",g:"♋",m1:6,d1:21,m2:7,d2:22,t:["intuitive","nurturing","moon child"]},
+  {n:"Leo",g:"♌",m1:7,d1:23,m2:8,d2:22,t:["radiant","creative","solar force"]},
+  {n:"Virgo",g:"♍",m1:8,d1:23,m2:9,d2:22,t:["discerning","devoted","earth keeper"]},
+  {n:"Libra",g:"♎",m1:9,d1:23,m2:10,d2:22,t:["harmonious","just","air weaver"]},
+  {n:"Scorpio",g:"♏",m1:10,d1:23,m2:11,d2:21,t:["transformative","intense","water depth"]},
+  {n:"Sagittarius",g:"♐",m1:11,d1:22,m2:12,d2:21,t:["free","visionary","fire seeker"]},
+  {n:"Capricorn",g:"♑",m1:12,d1:22,m2:1,d2:19,t:["ambitious","enduring","earth climber"]},
+  {n:"Aquarius",g:"♒",m1:1,d1:20,m2:2,d2:18,t:["visionary","rebel","air innovator"]},
+  {n:"Pisces",g:"♓",m1:2,d1:19,m2:3,d2:20,t:["dreaming","empathic","water mystic"]},
+];
+const MS=["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+const PH=[
+  {i:"🌑",n:"New Moon",h:"seeds of intention are most powerful now"},
+  {i:"🌒",n:"Waxing Crescent",h:"a powerful time to plant intentions"},
+  {i:"🌓",n:"First Quarter",h:"your wish gains momentum now"},
+  {i:"🌔",n:"Waxing Gibbous",h:"refine your vision and believe deeper"},
+  {i:"🌕",n:"Full Moon",h:"peak energy — wishes echo loudest tonight"},
+  {i:"🌖",n:"Waning Gibbous",h:"release what no longer serves your wish"},
+  {i:"🌗",n:"Last Quarter",h:"let go and trust the process"},
+  {i:"🌘",n:"Waning Crescent",h:"rest before the next cycle begins"},
+];
+const CT=[
+  "The veil between intent and reality is thinner today. What you release with genuine feeling will travel far.",
+  "A rare alignment of your personal sky invites you to speak your heart into the cosmos.",
+  "The stars that governed your birth are in gentle conversation today. Your wish arrives at exactly the right moment.",
+  "Ancient rhythms favour those who ask with sincerity. Your energy is unusually clear in this cosmic window.",
+  "The universe has been quietly arranging things. Today is not an accident — your wish was always meant for now.",
+  "Your cosmic signature is amplified in this cycle. What you send out will ripple further than you can imagine.",
+];
+
+function getSun(m,d){for(const s of SIGNS){if(s.m1<=s.m2){if((m===s.m1&&d>=s.d1)||(m===s.m2&&d<=s.d2)||(m>s.m1&&m<s.m2))return s;}else{if((m===s.m1&&d>=s.d1)||(m===s.m2&&d<=s.d2)||(m>s.m1||m<s.m2))return s;}}return SIGNS[0];}
+function getMoon(dob){return MS[(dob.getFullYear()*12+dob.getMonth()+dob.getDate())%12];}
+function getPhase(){const d=(Date.now()-new Date(2001,0,24).getTime())/86400000;return PH[Math.floor((d%29.53)/29.53*8)%8];}
+
+function reveal(){
+  const dv=document.getElementById('dob').value,nm=document.getElementById('nm1').value.trim()||'Seeker';
+  if(!dv){const el=document.getElementById('dob');el.style.borderColor='rgba(239,68,68,.5)';setTimeout(()=>el.style.borderColor='',1500);return;}
+  const dob=new Date(dv),sun=getSun(dob.getMonth()+1,dob.getDate()),moon=getMoon(dob),ph=getPhase();
+  G.name=nm;G.sun=sun.n;G.moon=moon;G.glyph=sun.g;G.phase=ph;
+  document.getElementById('sg').textContent=sun.g;
+  document.getElementById('sn').textContent=sun.n.toUpperCase();
+  document.getElementById('pn').textContent=nm;
+  document.getElementById('ps').textContent=`Sun in ${sun.n} · Moon in ${moon}`;
+  document.getElementById('ct').textContent=CT[Math.floor(Math.random()*CT.length)];
+  document.getElementById('mpi').textContent=ph.i;
+  document.getElementById('mpn').textContent=ph.n;
+  document.getElementById('mph').textContent=ph.h;
+  const tr=document.getElementById('tr');tr.innerHTML='';
+  sun.t.forEach(t=>{const d=document.createElement('div');d.className='trait';d.textContent=t;tr.appendChild(d);});
+  step(1);document.getElementById('s1').classList.add('done');
+  panel('p1b');sparks(innerWidth/2,180);
+}
+
+let bgo=false;
+function goBreathe(){step(2);panel('p2');document.getElementById('nm2').value=G.name;}
+function doBreathe(){
+  if(bgo)return;bgo=true;
+  const core=document.getElementById('bc'),ct=document.getElementById('bct');
+  const ph=[{l:'Breathe in…',d:4000,s:1.3},{l:'Hold…',d:2000,s:1.3},{l:'Breathe out…',d:4000,s:1},{l:'✦',d:700,s:1}];
+  let i=0;
+  function run(){if(i>=ph.length){ct.textContent='✦ You are ready ✦';setTimeout(goWish,900);return;}const p=ph[i];ct.textContent=p.l;core.style.transition=`transform ${p.d}ms ease-in-out`;core.style.transform=`scale(${p.s})`;i++;setTimeout(run,p.d);}
+  run();
+  setTimeout(()=>document.getElementById('skp').style.display='block',3000);
+}
+function goWish(){step(3);panel('p3');}
+document.getElementById('wt').addEventListener('input',function(){document.getElementById('cl').textContent=280-this.value.length;});
+
+async function sendWish(){
+  const wish=document.getElementById('wt').value.trim(),name=document.getElementById('nm2').value.trim()||G.name||'Seeker';
+  if(!wish||wish.length<4){const f=document.querySelector('.wfield');f.style.borderColor='rgba(239,68,68,.4)';setTimeout(()=>f.style.borderColor='',1500);return;}
+  G.wish=wish;G.name=name;
+  const btn=document.getElementById('rb');const r=btn.getBoundingClientRect();sparks(r.left+r.width/2,r.top+r.height/2);btn.disabled=true;
+  step(3);document.getElementById('s3').classList.add('done');
+  W.unshift({id:Date.now(),name,sun:G.sun,moon:G.moon,wish,ts:new Date().toISOString()});
+  localStorage.setItem(C.key,JSON.stringify(W));
+  show('loadSc');
+  try{G.resp=await api(wish,name,G.sun,G.moon,G.phase.n,false);}catch(e){G.resp=fallback();}
+  document.getElementById('cr').textContent=G.resp;
+  document.getElementById('rn').textContent=name;
+  document.getElementById('rsg').textContent=`${G.glyph} Sun in ${G.sun} · Moon in ${G.moon}`;
+  document.getElementById('wn').textContent=`Wish #${W.length} · ${G.phase.i} ${G.phase.n} · Sealed`;
+  show('respSc');
+}
+
+async function api(wish,name,sun,moon,phase,ext){
+  const words=ext?200:90;
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+    model:"claude-sonnet-4-20250514",max_tokens:1000,
+    system:`You are the Wish Keeper — an ancient cosmic entity who has existed since the first star was born. You receive people's most heartfelt wishes and respond with a deeply personal cosmic message.
+
+Your response must:
+- Weave their Sun sign (${sun}) and Moon sign (${moon}) as felt qualities into the prose — never as labels
+- Reference the ${phase} as a subtle atmospheric backdrop
+- Be deeply personal to this specific wish — not generic platitudes
+- Feel poetic, ancient, warm — like wisdom spoken by the stars themselves
+- Be flowing prose, ${words} words or fewer
+- NOT begin with the person's name or "I"
+- No bullet points, no formatting, no specific religious references
+- End with one sentence that feels like a cosmic blessing or seal — something they will remember
+- Tone: a wise friend who has seen a thousand lifetimes, and genuinely believes this wish will come true`,
+    messages:[{role:"user",content:`Name: ${name}\nSun sign: ${sun} · Moon sign: ${moon} · Moon phase: ${phase}\nWish: "${wish}"`}]
+  })});
+  const d=await r.json();if(d.error)throw d.error;return d.content[0].text;
+}
+
+function fallback(){
+  const f=[
+    "The stars grew still the moment your words arrived. What you carry in your heart already has a shape in the cosmos — one the universe has been quietly forming since long before tonight. Something, somewhere, has already begun to move. ✦",
+    "Your wish does not wait — it travels. The ancient rhythms that shaped your very nature are the same ones that will carry this intention forward. Trust the timing you cannot yet see. The cosmos keeps its word. ☽",
+    "In the language of the infinite, sincerity is the only currency. You have paid in full. Let go of the how, the when, the whether — and simply know that what was spoken here tonight is now alive in the great unseen. 🌌",
+    "The depth of your longing is the measure of your readiness. The universe heard not just the words but the feeling behind them — and that is the part that matters. Watch for the signs. They are already coming. ✦",
+  ];
+  return f[Math.floor(Math.random()*f.length)];
+}
+
+function openModal(){document.getElementById('modal').classList.add('open');}
+function closeModal(e){if(!e||e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');}
+async function pay(){
+  document.getElementById('modal').classList.remove('open');show('loadSc');
+  try{G.ext=await api(G.wish,G.name,G.sun,G.moon,G.phase.n,true);}catch(e){G.ext=G.resp;}
+  buildScroll();
+}
+function buildScroll(){
+  const now=new Date();
+  document.getElementById('sci').textContent=G.phase.i;
+  document.getElementById('snm').textContent=G.name;
+  document.getElementById('ssig').textContent=`${G.glyph} Sun in ${G.sun} · Moon in ${G.moon}`;
+  document.getElementById('sw').textContent=G.wish;
+  document.getElementById('scr').textContent=G.ext||G.resp;
+  document.getElementById('sdt').textContent=now.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})+' · '+G.phase.n;
+  document.getElementById('sid').textContent=`WK-${now.getFullYear()}-${String(W.length).padStart(5,'0')}`;
+  show('scrollSc');
+}
+function saveImg(){alert("To save: take a screenshot, or press & hold on mobile → Save Image");}
+function shareScroll(){
+  const m=`✨ My Cosmic Wish Scroll\n\n${G.glyph} Sun in ${G.sun} · Moon in ${G.moon}\n\n"${G.wish.slice(0,80)}${G.wish.length>80?'…':''}"\n\nGet yours:\n${C.url}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(m)}`,'_blank');
+}
+function doShare(){
+  const m=`✨ I just received my cosmic wish reading on The Wish Keeper\n\n${G.glyph} Sun in ${G.sun} · Moon in ${G.moon}\n\nTell the universe YOUR deepest wish:\n${C.url}`;
+  if(navigator.share)navigator.share({title:"The Wish Keeper",text:m,url:C.url});
+  else window.open(`https://wa.me/?text=${encodeURIComponent(m)}`,'_blank');
+}
+function again(){
+  ['wt','dob','city','nm1','nm2'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('cl').textContent='280';document.getElementById('rb').disabled=false;
+  bgo=false;document.getElementById('bc').style.transform='';
+  document.getElementById('bct').textContent='Touch the light';
+  document.getElementById('skp').style.display='none';
+  step(1);panel('p1');show('mainSc');
+}
+function sparks(x,y){
+  const sym=['✦','⋆','✧','·','*','˚'];
+  for(let i=0;i<10;i++){
+    const p=document.createElement('div');p.className='spark';
+    p.textContent=sym[Math.floor(Math.random()*sym.length)];
+    p.style.cssText=`left:${x+Math.random()*88-44}px;top:${y+Math.random()*48-24}px;font-size:${11+Math.random()*10}px;color:${['#f0c060','#c084fc','#a78bfa','#fde68a','#fff'][Math.floor(Math.random()*5)]}`;
+    document.body.appendChild(p);setTimeout(()=>p.remove(),2000);
+  }
+}
+function adminLogin(){document.getElementById('pi').value='';show('adminLoginSc');}
+function chkPin(v){
+  if(v.length!==C.pin.length)return;
+  if(v===C.pin){showAdmin();}
+  else{const e=document.getElementById('pi');e.style.color='#ef4444';setTimeout(()=>{e.style.color='';e.value='';},700);}
+}
+function showAdmin(){
+  document.getElementById('abg').textContent=`${W.length} wish${W.length!==1?'es':''}`;
+  const l=document.getElementById('wlist');
+  if(!W.length){l.innerHTML='<div class="ec">The cosmos awaits its first wish ✨</div>';}
+  else{l.innerHTML=W.map(w=>`<div class="wc"><div class="wcn">✦ ${esc(w.name)}</div><div class="wcs">${w.sun?`☀ ${w.sun} · ☽ ${w.moon}`:''}</div><div class="wcw">${esc(w.wish)}</div><div class="wcm">${new Date(w.ts).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div>`).join('');}
+  show('adminSc');
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>
